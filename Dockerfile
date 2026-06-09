@@ -16,8 +16,8 @@ COPY . .
 
 # Temporarily use a clean TanStack Start config for Railway/Node build.
 # This avoids the Lovable wrapper + @cloudflare/vite-plugin which forces
-# Cloudflare/Workers output (dist/ + custom server) instead of the standard
-# Node/Vinxi output (.output/server/index.mjs + proper CSS/assets for SSR).
+# Cloudflare/Workers output instead of the standard Vite 7 / TanStack Start
+# Node output (dist/server/server.js + dist/client/ for SSR).
 # The standard output is what the TanStack Start server entry and our
 # custom error wrapper (src/server.ts) expect.
 RUN cp vite.config.ts vite.config.ts.bak || true
@@ -38,16 +38,16 @@ export default defineConfig({
 })
 VITECONFIG
 
-# Production build (standard TanStack Start / Vinxi node output -> .output/)
+# Production build (TanStack Start / Vite 7 output -> dist/)
 RUN bun run build
 
 # Restore original vite.config (for local dev / other deploys)
 RUN mv vite.config.ts.bak vite.config.ts || true
 
-# Verify we got the expected Node server entry (not a CF dist build)
-RUN if [ ! -f .output/server/index.mjs ]; then \
-      echo "ERROR: Build did not produce .output/server/index.mjs"; \
-      echo "Contents of .output:"; ls -la .output 2>/dev/null || true; \
+# Verify we got the expected Vite 7 Node server entry
+RUN if [ ! -f dist/server/server.js ]; then \
+      echo "ERROR: Build did not produce dist/server/server.js"; \
+      echo "Contents of dist:"; ls -la dist 2>/dev/null || true; \
       exit 1; \
     fi
 
@@ -61,12 +61,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy the complete build output (includes server bundle + client assets + CSS)
-COPY --from=builder /app/.output ./.output
+# Copy the complete build output (dist/server/ + dist/client/ with assets + CSS)
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
 # Run the standard TanStack Start server entry.
 # The sh wrapper makes sure PORT is visible to the process (some frameworks
 # read it early). This also helps with correct 0.0.0.0 binding on Railway.
-CMD ["sh", "-c", "PORT=${PORT:-3000} bun .output/server/index.mjs"]
+CMD ["sh", "-c", "PORT=${PORT:-3000} bun dist/server/server.js"]
