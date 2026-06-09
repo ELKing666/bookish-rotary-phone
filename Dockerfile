@@ -60,6 +60,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOST=0.0.0.0
+
+# Copy dependency manifests and install production deps only
+COPY --from=builder /app/package.json /app/bun.lock ./
+RUN bun install --production --frozen-lockfile
 
 # Copy the complete build output (dist/server/ + dist/client/ with assets + CSS)
 COPY --from=builder /app/dist ./dist
@@ -67,6 +72,6 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 
 # Run the standard TanStack Start server entry.
-# The sh wrapper makes sure PORT is visible to the process (some frameworks
-# read it early). This also helps with correct 0.0.0.0 binding on Railway.
-CMD ["sh", "-c", "PORT=${PORT:-3000} bun dist/server/server.js"]
+# HOST=0.0.0.0 ensures the server binds to all interfaces (required by Railway).
+# PORT is injected by Railway at runtime.
+CMD ["sh", "-c", "HOST=0.0.0.0 PORT=${PORT:-3000} bun dist/server/server.js"]
