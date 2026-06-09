@@ -1,0 +1,57 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+# Build output (re-created inside container)
+.output
+dist
+dist-ssr
+.tanstack
+.vinxi
+.nitro
+
+# Environment & secrets
+.env
+.env.*
+*.local
+.envrc
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE / editor
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+
+# Cloudflare / Wrangler (not needed for Railway Node build)
+.wrangler
+wrangler.jsonc
+wrangler.toml
+
+# Lovable / dev artifacts
+.lovable
+
+# Supabase local (migrations/config not required at runtime)
+supabase
+
+# Docker (prevent recursive)
+Dockerfile
+.dockerignore
+
+# Misc
+.DS_Store
+Thumbs.db
